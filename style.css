@@ -231,6 +231,10 @@ kbd {
   display: none;
 }
 
+.overlay-box.hidden {
+  display: none;
+}
+
 .overlay-box {
   text-align: center;
   display: flex;
@@ -284,6 +288,50 @@ kbd {
   border-radius: 6px;
   padding: 8px 20px;
   font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+/* ---- Menú de pausa ---- */
+.pause-menu {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 0 40px var(--board-shadow);
+}
+
+.pause-menu.hidden {
+  display: none;
+}
+
+.pause-menu-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--value-color);
+}
+
+.pause-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pause-btn {
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 1px;
@@ -389,4 +437,73 @@ table.highscores tr.hs-new td {
   font-size: 11px;
   color: var(--controls-color);
   font-family: 'Courier New', Courier, monospace;
+}
+
+.pause-btn:hover {
+  background: var(--restart-hover);
+}
+
+.pause-btn-secondary {
+  background: var(--kbd-bg);
+  color: var(--text-color);
+  border: 1px solid var(--kbd-border);
+}
+
+.pause-btn-secondary:hover {
+  background: var(--kbd-border);
+}
+
+.pause-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.level-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level-picker .value {
+  font-size: 20px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.level-step {
+  background: var(--kbd-bg);
+  color: var(--value-color);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.level-step:hover {
+  background: var(--kbd-border);
+}
+
+.pause-controls {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pause-controls.hidden {
+  display: none;
+}
+
+.pause-controls li {
+  font-size: 12px;
+  color: var(--controls-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
