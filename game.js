@@ -57,12 +57,88 @@ const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
 const powerupEl = document.getElementById('powerup');
+const startScreen = document.getElementById('start-screen');
+const startHighscores = document.getElementById('start-highscores');
+const overlayHighscores = document.getElementById('overlay-highscores');
+const scoreEntry = document.getElementById('score-entry');
+const nameInput = document.getElementById('name-input');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const playBtn = document.getElementById('play-btn');
+const resetScoresBtn = document.getElementById('reset-scores-btn');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let gridColor, blockHighlight;
 let linesSinceSpecial, pendingSpecial, freezeUntil, flash;
+let bestCombo, maxLines;
 
 const THEME_KEY = 'tetris-theme';
+const HIGHSCORES_KEY = 'tetris-highscores';
+
+function getHighscores() {
+  const empty = { scores: [], bestCombo: 0, maxLines: 0 };
+  const raw = localStorage.getItem(HIGHSCORES_KEY);
+  if (!raw) return empty;
+  try {
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return empty;
+    const scores = (Array.isArray(data.scores) ? data.scores : [])
+      .filter(s => s && typeof s === 'object')
+      .map(s => ({
+        name: String(s.name == null ? 'ANON' : s.name).slice(0, 12),
+        score: Number(s.score) || 0,
+        lines: Number(s.lines) || 0,
+        level: Number(s.level) || 1,
+      }));
+    return {
+      scores,
+      bestCombo: Number(data.bestCombo) || 0,
+      maxLines: Number(data.maxLines) || 0,
+    };
+  } catch (e) {
+    return empty;
+  }
+}
+
+function saveHighscores(data) {
+  try {
+    localStorage.setItem(HIGHSCORES_KEY, JSON.stringify(data));
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, ch => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
+function renderHighscores(container, highlightIndex) {
+  const hs = getHighscores();
+  let html = '<table class="highscores"><thead><tr>' +
+    '<th>#</th><th>Nombre</th><th>Punt.</th><th>Líneas</th><th>Nivel</th>' +
+    '</tr></thead><tbody>';
+  if (hs.scores.length === 0) {
+    html += '<tr><td colspan="5" class="hs-empty">Sin records todavía</td></tr>';
+  } else {
+    hs.scores.forEach((s, i) => {
+      const cls = i === highlightIndex ? ' class="hs-new"' : '';
+      html += `<tr${cls}><td>${i + 1}</td><td>${escapeHtml(s.name)}</td>` +
+        `<td>${Number(s.score).toLocaleString()}</td><td>${Number(s.lines) || 0}</td>` +
+        `<td>${Number(s.level) || 1}</td></tr>`;
+    });
+  }
+  html += '</tbody></table>';
+  html += `<div class="hs-stats"><span>Mejor combo: ${hs.bestCombo}</span>` +
+    `<span>Líneas máx: ${hs.maxLines}</span></div>`;
+  container.innerHTML = html;
+}
+
+function showStartScreen() {
+  renderHighscores(startHighscores, -1);
+  overlay.classList.add('hidden');
+  startScreen.classList.remove('hidden');
+}
 
 function readThemeColors() {
   const styles = getComputedStyle(document.documentElement);
@@ -154,7 +230,9 @@ function clearLines() {
     }
   }
   if (cleared) {
+    if (cleared > bestCombo) bestCombo = cleared;
     lines += cleared;
+    if (lines > maxLines) maxLines = lines;
     score += (LINE_SCORES[cleared] || 0) * level;
     level = Math.floor(lines / 10) + 1;
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
@@ -414,7 +492,35 @@ function endGame() {
   cancelAnimationFrame(animId);
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
+
+  const hs = getHighscores();
+  hs.bestCombo = Math.max(hs.bestCombo, bestCombo);
+  hs.maxLines = Math.max(hs.maxLines, maxLines);
+  saveHighscores(hs);
+
+  const qualifies = score > 0 &&
+    (hs.scores.length < 5 || score > Number(hs.scores[hs.scores.length - 1].score));
+  if (qualifies) {
+    nameInput.value = '';
+    scoreEntry.classList.remove('hidden');
+    setTimeout(() => nameInput.focus(), 0);
+  } else {
+    scoreEntry.classList.add('hidden');
+  }
+  renderHighscores(overlayHighscores, -1);
   overlay.classList.remove('hidden');
+}
+
+function saveScoreEntry() {
+  const name = (nameInput.value.trim() || 'ANON').slice(0, 12);
+  const hs = getHighscores();
+  const entry = { name, score, lines, level };
+  hs.scores.push(entry);
+  hs.scores.sort((a, b) => Number(b.score) - Number(a.score));
+  hs.scores = hs.scores.slice(0, 5);
+  saveHighscores(hs);
+  scoreEntry.classList.add('hidden');
+  renderHighscores(overlayHighscores, hs.scores.indexOf(entry));
 }
 
 function togglePause() {
@@ -427,6 +533,8 @@ function togglePause() {
     cancelAnimationFrame(animId);
     overlayTitle.textContent = 'PAUSA';
     overlayScore.textContent = '';
+    scoreEntry.classList.add('hidden');
+    overlayHighscores.innerHTML = '';
     overlay.classList.remove('hidden');
   }
 }
@@ -463,10 +571,15 @@ function init() {
   pendingSpecial = false;
   freezeUntil = 0;
   flash = null;
+  bestCombo = 0;
+  maxLines = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
+  scoreEntry.classList.add('hidden');
+  overlayHighscores.innerHTML = '';
+  startScreen.classList.add('hidden');
   overlay.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
@@ -498,6 +611,21 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+saveScoreBtn.addEventListener('click', saveScoreEntry);
+nameInput.addEventListener('keydown', e => {
+  if (e.code === 'Enter') { e.preventDefault(); saveScoreEntry(); }
+});
+playBtn.addEventListener('click', init);
+resetScoresBtn.addEventListener('click', () => {
+  if (confirm('¿Borrar todos los records?')) {
+    try {
+      localStorage.removeItem(HIGHSCORES_KEY);
+    } catch (e) {
+      /* ignore */
+    }
+    renderHighscores(startHighscores, -1);
+  }
+});
 
 initTheme();
-init();
+showStartScreen();

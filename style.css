@@ -249,3 +249,124 @@ kbd {
 #restart-btn:hover {
   background: var(--restart-hover);
 }
+
+#start-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--value-color);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--value-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+  background: var(--kbd-bg);
+}
+
+/* ---- Tabla de records ---- */
+.score-entry {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.score-entry.hidden {
+  display: none;
+}
+
+#name-input {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--text-color);
+}
+
+#name-input:focus-visible {
+  outline: 2px solid var(--value-color);
+  outline-offset: 1px;
+}
+
+#save-score-btn {
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.highscores-box {
+  width: 100%;
+}
+
+.highscores-box:empty {
+  display: none;
+}
+
+table.highscores {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+}
+
+table.highscores th {
+  color: var(--label-color);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-align: right;
+  padding: 3px 6px;
+}
+
+table.highscores th:nth-child(2) {
+  text-align: left;
+}
+
+table.highscores td {
+  color: var(--text-color);
+  padding: 3px 6px;
+  text-align: right;
+  border-top: 1px solid var(--border-color);
+}
+
+table.highscores td:nth-child(2) {
+  text-align: left;
+}
+
+table.highscores td.hs-empty {
+  text-align: center;
+  color: var(--label-color);
+}
+
+table.highscores tr.hs-new td {
+  color: var(--value-color);
+  border-top: 1px solid var(--value-color);
+  border-bottom: 1px solid var(--value-color);
+  font-weight: 700;
+}
+
+.hs-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--controls-color);
+  font-family: 'Courier New', Courier, monospace;
+}
